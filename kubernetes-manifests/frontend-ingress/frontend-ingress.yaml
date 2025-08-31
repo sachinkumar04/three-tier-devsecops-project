@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: app.brijsinghjadon.com   # <- Updated host
+    - host: app.brijsinghjadon.com
       http:
         paths:
           - path: /
@@ -19,4 +19,4 @@ spec:
               service:
                 name: frontend
                 port:
-                  number: 3000
+                  number: 80   # ✅ Must match Service port
