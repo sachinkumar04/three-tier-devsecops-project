@@ -10,5 +10,5 @@ spec:
   ports:
     - name: http
       port: 80        # Exposed port for ALB
-      targetPort: 3000  # Container port
+      targetPort: 3000  # Container port inside pod
       protocol: TCP
