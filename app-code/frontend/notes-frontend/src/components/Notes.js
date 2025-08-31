@@ -12,6 +12,9 @@ import {
     Paper
 } from '@mui/material';
 
+// ✅ Use backend URL from environment variable
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || '/api';
+
 const Notes = () => {
     const [notes, setNotes] = useState([]);
     const [title, setTitle] = useState('');
@@ -23,8 +26,7 @@ const Notes = () => {
 
     const fetchNotes = async () => {
         try {
-            const response = await axios.get('/api/notes/');
-            // normalize response to always be an array
+            const response = await axios.get(`${API_BASE_URL}`);
             const data = response.data?.notes || response.data || [];
             setNotes(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -35,7 +37,7 @@ const Notes = () => {
     const addNote = async () => {
         if (!title.trim() || !content.trim()) return;
         try {
-            const response = await axios.post('/api/notes/', { title, content });
+            const response = await axios.post(`${API_BASE_URL}`, { title, content });
             setNotes((prev) => [...prev, response.data]);
             setTitle('');
             setContent('');
@@ -47,7 +49,7 @@ const Notes = () => {
     return (
         <Paper
             sx={{
-                backgroundColor: 'rgb(135,206,250)', // Light blue background
+                backgroundColor: 'rgb(135,206,250)',
                 minHeight: '100vh',
                 display: 'flex',
                 alignItems: 'center',
