@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Typography, Container, Box, Grid, Card, CardContent, CardActions, Paper } from '@mui/material';
+import {
+    TextField,
+    Button,
+    Typography,
+    Container,
+    Box,
+    Grid,
+    Card,
+    CardContent,
+    Paper
+} from '@mui/material';
 
 const Notes = () => {
     const [notes, setNotes] = useState([]);
@@ -12,15 +22,26 @@ const Notes = () => {
     }, []);
 
     const fetchNotes = async () => {
-        const response = await axios.get('/api/notes/');
-        setNotes(response.data);
+        try {
+            const response = await axios.get('/api/notes/');
+            // normalize response to always be an array
+            const data = response.data?.notes || response.data || [];
+            setNotes(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Error fetching notes:', error);
+        }
     };
 
     const addNote = async () => {
-        const response = await axios.post('/api/notes/', { title, content });
-        setNotes([...notes, response.data]);
-        setTitle('');
-        setContent('');
+        if (!title.trim() || !content.trim()) return;
+        try {
+            const response = await axios.post('/api/notes/', { title, content });
+            setNotes((prev) => [...prev, response.data]);
+            setTitle('');
+            setContent('');
+        } catch (error) {
+            console.error('Error adding note:', error);
+        }
     };
 
     return (
@@ -35,14 +56,15 @@ const Notes = () => {
             }}
         >
             <Container maxWidth="lg">
-                <Box display="flex" justifyContent="space-between">
-                    <Box flex={1} mr={4}>
+                <Box display="flex" justifyContent="space-between" flexWrap="wrap">
+                    {/* Add Note Form */}
+                    <Box flex={1} minWidth="300px" mr={{ xs: 0, md: 4 }} mb={{ xs: 4, md: 0 }}>
                         <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', marginBottom: 4 }}>
                             Add a New Note
                         </Typography>
                         <Box
-                            mb={4}
                             component="form"
+                            onSubmit={(e) => { e.preventDefault(); addNote(); }}
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -69,38 +91,43 @@ const Notes = () => {
                                 onChange={(e) => setContent(e.target.value)}
                                 variant="outlined"
                             />
-                            <Button variant="contained" color="primary" onClick={addNote} sx={{ alignSelf: 'center' }}>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                sx={{ alignSelf: 'center' }}
+                            >
                                 Add Note
                             </Button>
                         </Box>
                     </Box>
-                    <Box flex={1}>
+
+                    {/* Notes List */}
+                    <Box flex={1} minWidth="300px">
                         <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', marginBottom: 4 }}>
                             Notes List
                         </Typography>
                         <Grid container spacing={3}>
-                            {notes.map((note) => (
-                                <Grid item xs={12} key={note.id}>
-                                    <Card elevation={3} sx={{ height: '100%' }}>
-                                        <CardContent>
-                                            <Typography variant="h6" gutterBottom>
-                                                {note.title}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {note.content}
-                                            </Typography>
-                                        </CardContent>
-                                        {/* <CardActions>
-                                            <Button size="small" color="primary">
-                                                Edit
-                                            </Button>
-                                            <Button size="small" color="secondary">
-                                                Delete
-                                            </Button>
-                                        </CardActions> */}
-                                    </Card>
-                                </Grid>
-                            ))}
+                            {notes.length === 0 ? (
+                                <Typography variant="body1" sx={{ margin: '0 auto' }}>
+                                    No notes yet.
+                                </Typography>
+                            ) : (
+                                notes.map((note, idx) => (
+                                    <Grid item xs={12} key={note.id || idx}>
+                                        <Card elevation={3} sx={{ height: '100%' }}>
+                                            <CardContent>
+                                                <Typography variant="h6" gutterBottom>
+                                                    {note.title}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {note.content}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                ))
+                            )}
                         </Grid>
                     </Box>
                 </Box>
